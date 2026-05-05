@@ -1,0 +1,290 @@
+    <style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #ff6a00, #ffb347);
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Fondo */
+    .fondo-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(6px);
+    }
+
+    /* Contenedor */
+    .form-sorteo {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 450px;
+        padding: 30px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.95);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    }
+
+    .form-sorteo h2 {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    /* Campos */
+    .campo {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .campo input {
+        width: 100%;
+        padding: 14px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        outline: none;
+    }
+
+    .campo input.error {
+        border-color: red;
+    }
+
+    .mensaje-error {
+        font-size: 12px;
+        color: red;
+        margin-top: 5px;
+        display: none;
+    }
+
+    /* Labels */
+    .campo label {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        color: #777;
+        transform: translateY(-50%);
+        transition: 0.3s;
+        background: white;
+        padding: 0 5px;
+    }
+
+    .campo input:focus + label,
+    .campo input:not(:placeholder-shown) + label {
+        top: -8px;
+        font-size: 12px;
+        color: #ff6a00;
+    }
+
+    /* Lista ciudades */
+    .lista-ciudades {
+        position: absolute;
+        width: 100%;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        max-height: 150px;
+        overflow-y: auto;
+        display: none;
+        z-index: 10;
+    }
+
+    .lista-ciudades div {
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .lista-ciudades div:hover {
+        background: #f2f2f2;
+    }
+
+    /* Checkbox */
+    .check {
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+    }
+
+    /* Botón */
+    .btn-enviar {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ff6a00, #ff8c00);
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+    }
+
+    .modal-contenido {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        max-width: 350px;
+        margin: 15% auto;
+        text-align: center;
+    }
+    </style>    
+
+    <div class="fondo-overlay"></div>
+
+    <div class="form-sorteo">
+        <h2>Participa en el Sorteo 🎉</h2>
+
+        <form id="formSorteo" method="POST"  action="https://formspree.io/f/mzdorqwv">
+    >
+
+            <div class="campo">
+                <input type="text" required placeholder=" ">
+                <label>Nombre completo</label>
+            </div>
+
+            <!-- CEDULA -->
+            <div class="campo">
+                <input type="text" id="cedula" required placeholder=" ">
+                <label>Cédula</label>
+            </div>
+
+            <!-- TELEFONO -->
+            <div class="campo">
+                <input type="text" id="telefono" required placeholder=" ">
+                <label>Celular (10 dígitos)</label>
+                <div id="errorTelefono" class="mensaje-error">
+                    Debe tener exactamente 10 dígitos
+                </div>
+            </div>
+
+            <!-- CIUDAD -->
+            <div class="campo">
+                <input type="text" id="ciudadInput" autocomplete="off" required placeholder=" ">
+                <label>Ciudad o municipio</label>
+                <div id="listaCiudades" class="lista-ciudades"></div>
+            </div>
+
+            <!-- TERMINOS -->
+            <div class="check">
+                <input type="checkbox" id="terminos">
+                <span>
+                    Acepto 
+                    <a href="https://www.depositotrujillo.co/terminos-y-condiciones" target="_blank">
+                        términos y condiciones
+                    </a>
+                </span>
+            </div>
+
+            <br>
+
+            <button type="submit" class="btn-enviar">Registrarme</button>
+
+        </form>
+    </div>
+    
+
+    <!-- MODAL -->
+    <div id="modalTerminos" class="modal">
+        <div class="modal-contenido">
+            <p>⚠️ Debes aceptar los términos y condiciones para continuar.</p>
+            <button onclick="cerrarModal()">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+    /* SOLO NUMEROS */
+    function soloNumeros(input){
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
+    const telefono = document.getElementById("telefono");
+    const cedula = document.getElementById("cedula");
+    const errorTelefono = document.getElementById("errorTelefono");
+
+    telefono.addEventListener("input", () => {
+        soloNumeros(telefono);
+
+        if(telefono.value.length > 10){
+            telefono.value = telefono.value.slice(0,10);
+        }
+
+        if(telefono.value.length !== 10){
+            errorTelefono.style.display = "block";
+            telefono.classList.add("error");
+        } else {
+            errorTelefono.style.display = "none";
+            telefono.classList.remove("error");
+        }
+    });
+
+    cedula.addEventListener("input", () => soloNumeros(cedula));
+
+    /* CIUDADES */
+    const ciudades = ["Bogotá","Medellín","Cali","Barranquilla","Cartagena","Neiva","Pasto","Tunja"];
+
+    const input = document.getElementById("ciudadInput");
+    const lista = document.getElementById("listaCiudades");
+
+    input.addEventListener("input", function(){
+        const valor = this.value.toLowerCase();
+        lista.innerHTML = "";
+
+        if(valor.length < 2){
+            lista.style.display = "none";
+            return;
+        }
+
+        const filtradas = ciudades.filter(c => c.toLowerCase().includes(valor));
+
+        filtradas.forEach(ciudad => {
+            const div = document.createElement("div");
+            div.textContent = ciudad;
+            div.onclick = () => {
+                input.value = ciudad;
+                lista.style.display = "none";
+            };
+            lista.appendChild(div);
+        });
+
+        lista.style.display = filtradas.length ? "block" : "none";
+    });
+
+    /* VALIDACION FINAL */
+    const form = document.getElementById("formSorteo");
+    const checkbox = document.getElementById("terminos");
+    const modal = document.getElementById("modalTerminos");
+
+    form.addEventListener("submit", function(e){
+
+        if(!checkbox.checked){
+            e.preventDefault();
+            modal.style.display = "block";
+            return;
+        }
+
+        if(telefono.value.length !== 10){
+            e.preventDefault();
+            errorTelefono.style.display = "block";
+            telefono.classList.add("error");
+            return;
+        }
+
+        e.preventDefault();
+        alert("¡Registro exitoso! 🎉");
+        form.reset();
+    });
+
+    function cerrarModal(){
+        modal.style.display = "none";
+    }
+    </script>
